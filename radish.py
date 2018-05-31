@@ -84,8 +84,6 @@ def radish(rho,bfield0,p0,nx,ny,nz,nside):
     psi[sel_p]=psi[sel_p]-2.*math.pi
 
     #HEALPix projection
-
-    nside=8
     pxr=hp.nside2resol(nside,arcmin=True)/60.*math.pi/180.
     npix=hp.nside2npix(nside)
     lpix=np.arange(0,npix,1)
