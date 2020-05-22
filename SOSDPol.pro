@@ -4,7 +4,7 @@ pro SOSDPol, NSIDE, fM, N, alphaM, l0, b0, resol, Qm, Um
 ; SOS-DPol: Simulations On the Sphere of Dust Polarization
 ;
 ; The routine produces modelled Stokes parameters for linear polarization Q and U accounting for the Galactic magnetic field structure only (Planck Int. results. 2016. XLIV). IDL and HEALPix are necessary.   
-; (Planck Intermediate results XLIV. A&A 596, A105 (2016)) 
+; 
 ; INPUTS
 ;
 ; NSIDE - HEALPix determines the pixel resolution on the sphere
