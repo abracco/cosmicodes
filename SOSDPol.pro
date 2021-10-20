@@ -38,7 +38,7 @@ if N eq 0 then N=1
 ; Building the Field structure: turbulent power spectrum
 el=findgen(nside*3+1)
 cl=el^(alphaM)
-cl(0:1)=0.
+cl[0:1]=0.
 
 ;
 ; LOS vectors
