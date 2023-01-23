@@ -84,7 +84,7 @@ def plot_B_streamlines(mi, mq, mu, imax, imin):
     xp = x
     yp = y
     y2, x2 = np.meshgrid(xp, yp, indexing='ij')
-    psi=-0.5*np.arctan2(mu,mq)
+    psi=-0.5*np.arctan2(mu,mq) 
     x3=np.cos(psi)
     y3=np.sin(psi)
     plt.figure(10)
