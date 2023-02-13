@@ -155,7 +155,7 @@ def powerplus_ran(mapin, nsidein, nsideout, resol_o, lminfit, lmaxfit, lcut, plo
     mrm_sc = random_map_hpx(nsideout,res[0],resol_o)
     cls1=hp.sphtfunc.anafast(mrm_sc,lmax=lmax1)
     ind = lcut
-    mtest = mrm_sc*np.sqrt(cl0[ind])/np.sqrt(cls1[ind])
+    mtest = mrm_sc*np.sqrt(np.median(cl0[ind:ind+5]))/np.sqrt(np.median(cls1[ind:ind+5]))
     clsf=hp.sphtfunc.anafast(mtest,lmax=lmax1)
 
     clin = clsf.copy()
