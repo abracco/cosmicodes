@@ -148,7 +148,7 @@ def powerplus_ran(mapin, nsidein, nsideout, resol_o, lminfit, lmaxfit, lcut, plo
     res = np.polyfit(np.log10(el[sel]),np.log10(cl0[sel]),1)
 
     lmax1 = 2*nsideout-1
-    mrmd = hp.ud_grade(mapin,nside_out=nside1,order_in='RING')
+    mrmd = hp.ud_grade(mapin,nside_out=nsideout,order_in='RING')
     cl1=hp.sphtfunc.anafast(mrmd,lmax=lmax1)
     el1 = np.arange(np.shape(cl1)[0])
     
