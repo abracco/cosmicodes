@@ -94,8 +94,93 @@ def plot_B_streamlines(mi, mq, mu, imax, imin):
     plt.show()
     return
 
+#########################
+
+def random_map_hpx(nside, alphaM, resol):
+    '''
+    Creates a random map with a given power-law power spectrum of index alphaM
+    calling sequence:
+    map_random = random_map_hpx(nside, alphaM, resol)
+    '''
+    import numpy as np
+    import pylab as plt
+    import matplotlib
+    from matplotlib import cm
+    cm_my=cm.viridis
+    from matplotlib import rc
+    import astropy
+    #import idlwrap as idl
+    from astropy.io import fits
+    import sys
+    import math
+    import scipy
+    from scipy import ndimage as nd
+    from scipy import stats as st
+    from scipy import constants as ko
+    from scipy import signal
+    from numpy.random import MT19937
+    from numpy.random import RandomState, SeedSequence
+    import healpy as hp
+    
+    el=np.linspace(0,nside*3,nside*3+1)
+    cl=el**(alphaM)
+    cl[0:1]=0.
+    rs = RandomState(MT19937(SeedSequence(123456789)))
+    mapran = hp.synfast(cl,nside=nside,lmax=2*nside+1,fwhm=resol/60*np.pi/180)
+    
+    return mapran
 
 
+#######################
+def powerplus_ran(mapin, nsidein, nsideout, resol_o, lminfit, lmaxfit, lcut, plot=False):
+ 
+    '''
+    Adding small-scale structure to a map (map_in) using Gausssian random fields with power-law power spectra as the input map
+    calling sequence
+    
+    m_smaller_scales = powerplus_ran( mapin, nsidein, nsideout, resol_o, lminfit, lmaxfit, lcut, plot=False/True)
+    '''
+
+    lmax0 = 2*nsidein-1
+    cl0=hp.sphtfunc.anafast(mapin,lmax=lmax0)
+    el = np.arange(np.shape(cl0)[0])
+    sel = np.where((el >= lminfit) & (el <= lmaxfit))
+    res = np.polyfit(np.log10(el[sel]),np.log10(cl0[sel]),1)
+
+    lmax1 = 2*nsideout-1
+    mrmd = hp.ud_grade(mapin,nside_out=nside1,order_in='RING')
+    cl1=hp.sphtfunc.anafast(mrmd,lmax=lmax1)
+    el1 = np.arange(np.shape(cl1)[0])
+    
+    mrm_sc = random_map_hpx(nsideout,res[0],resol_o)
+    cls1=hp.sphtfunc.anafast(mrm_sc,lmax=lmax1)
+    ind = lcut
+    mtest = mrm_sc*np.sqrt(cl0[ind])/np.sqrt(cls1[ind])
+    clsf=hp.sphtfunc.anafast(mtest,lmax=lmax1)
+
+    clin = clsf.copy()
+    clin[np.where(el1 <= ind)] = 0
+    almn = hp.synalm(clin, lmax = lmax1)
+    mapn = hp.alm2map(almn,nsideout, lmax = lmax1, pol = False)
+
+    alms = hp.map2alm(mrmd,lmax = lmax1,pol=False)
+    fl = cl1.copy()*0.
+    fl[np.where(el1 <= ind)]=1
+    alms1 = hp.almxfl(alms,fl)
+    mrmc = hp.alm2map(alms1,nsideout, lmax = lmax1, pol = False)
+    mapfin = mrmc + mapn
+    clfin = hp.anafast(mapfin,lmax= lmax1)
+    
+    if plot == True :
+        plt.loglog(el[1:],cl0[1:],label='Input map spectrum')
+        plt.loglog(el1[1:],clfin[1:],alpha=0.5,label='Small-scale structure added')
+        plt.axvline(x = ind,color='black',linestyle='dashed',alpha=0.5)
+        plt.ylabel(r'$C_{\mathcal{l}}$')
+        plt.xlabel(r'$\mathcal{l}$')
+        plt.legend()
+
+    return mapfin
+    
 
 
 
