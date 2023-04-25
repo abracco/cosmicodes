@@ -181,6 +181,43 @@ def powerplus_ran(mapin, nsidein, nsideout, resol_o, lminfit, lmaxfit, lcut, plo
 
     return mapfin
     
+##########################
+def dirade_hpx(nside, resol, spec, N=5):
+    '''
+    #####
+    DIrectional RAndom cascADE in Healpix. See Robitaille et al. 2020 and Matthew Price's page http://astro-informatics.github.io/s2fft/index.html#
+    
+    Inputs: NSIDE, angular resolution in arcmin, spectral index of the Gaussian random field, Number (N) of wavelet directions (2*N - 1);
+    Outputs: filametary and Gaussian random maps
+    
+    Needed packages and libraries:
+    - Planck_routines.py : https://github.com/abracco/cosmicodes/tree/master/4GMIMS
+    - healpy : pip install healpy
+    - JAX wavelet transform code : pip install git+https://github.com/astro-informatics/s2wav.git
+    #####
+        '''
+    from jax.config import config
+    config.update("jax_enable_x64", True)
+    import healpy as hp
+    import s2wav, s2fft
+   
+    L = 2*nside
+    m = random_map_hpx(nside,spec,resol)
+    flm_healpix = hp.sphtfunc.map2alm(m, lmax=L-1, iter=10)
+    flm = s2fft.sampling.s2_samples.flm_hp_to_2d(flm_healpix, L)
+    f = s2fft.inverse_jax(flm, L, reality=True)
+    J_min = 0
+    wavelet_filters = s2wav.filter_factory.filters.filters_directional_vectorised(L, N, J_min)
+    wavelet_maps, scaling_maps = s2wav.analysis(f, L, N, J_min, reality=True, filters=wavelet_filters)
+    prod = 1
+    for j in range(np.shape(wavelet_maps)[0]): prod = prod*np.exp(wavelet_maps[j]/np.std(wavelet_maps[j]))
+    sum0 = np.sum(prod,axis=0)
+    mfil = np.log10(np.abs(sum0)/np.shape(wavelet_maps)[1])
+    flm_back = s2fft.forward_jax((mfil),L,reality=True)
+    flm_b_hpx = s2fft.sampling.s2_samples.flm_2d_to_hp(flm_back, L)
+    mapf = hp.sphtfunc.alm2map(flm_b_hpx, nside, lmax = L-1)
+ 
+    return mapf, m
 
 
 
