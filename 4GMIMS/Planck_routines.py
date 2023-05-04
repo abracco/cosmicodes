@@ -219,8 +219,85 @@ def dirade_hpx(nside, resol, spec, N=5):
  
     return mapf, m
 
+###############################
 
+def stereo_proj_hpx(nside, nx, ny, radius, m_in, l0, b0, plot=False, step = 10):
+    '''
+    #####
+    This routine produces a stereographic projection (m_out) of the HEALPix map given as input (m_in).
+    The code is adapted from http://mathworld.wolfram.co;m StereographicProjection.html
+    INPUTS
+    nside - is the HEALPix parameter of m_in
+    nx, ny, - are the x,y dimensions of the output map
+    radius - is the radius in degrees of the selected area that is projected
+    m_in - input map
+    l0 - the central Galactic longitude in degrees
+    b0 - the central Galactic latitude in degrees
+    ncont - number of coordinates contours in the final image
+    OUTPUTS
+    m_out - output map nx times ny
+    l1 and b1 - output maps of projected Galactic coordinates in radians
+    #####
+        '''
+    npix = hp.nside2npix(nside)
+    pix = np.arange(hp.nside2npix(nside))
+    theta, phi = hp.pix2ang(nside,pix)
+    glon = phi
+    glat = np.pi/2. - theta
+    
+    l0=np.deg2rad(l0)
+    b0=np.deg2rad(b0)
+    vec_tmp=np.array([np.cos(l0)*np.cos(b0),np.sin(l0)*np.cos(b0),np.sin(b0)])
+    sel=np.where(glon != 0)
+    
+    if radius !=  0 : sel = hp.query_disc(nside,vec_tmp,np.deg2rad(radius))
+    mask=m_in.copy()*0
+    mask[sel]=1
+    morto = hp.orthview(m_in*mask,rot=[np.rad2deg(l0),np.rad2deg(b0)],half_sky=True,norm='hist',return_projected_map=True).data;plt.title='Orthographic test projection'
+    hp.graticule()
+    #print('1')
+    lr=glon[sel]
+    br=glat[sel]
+    
+    R=1
+    A=2.*R/(1+np.sin(b0)*np.sin(br)+np.cos(b0)*np.cos(br)*np.cos(lr-l0))
+    sel2=np.where(A < 1e4)
+    x1= A*np.cos(br)*np.sin(lr-l0)
+    y1= A*(np.cos(b0)*np.sin(br)-np.sin(b0)*np.cos(br)*np.cos(lr-l0))
+    x1=x1[sel2]
+    y1=y1[sel2]
+    
+    xn = np.linspace(0,nx-1,nx)
+    yn = np.linspace(0,ny-1,ny)
+    ynn, xnn = np.meshgrid(xn,yn,indexing='ij')
+    
+    xnn=-(xnn/(nx-1.)*(np.max(x1)-np.min(x1))+np.min(x1))
+    ynn=ynn/(ny-1.)*(np.max(y1)-np.min(y1))+np.min(y1)
+    #print('2')
+    rho=np.sqrt(xnn**2+ynn**2)
+    c=2*np.arctan(rho/(2.*R))
+    
+    b1=np.arcsin(np.cos(c)*np.sin(b0)+(ynn*np.sin(c)*np.cos(b0))/(rho))
+    l1=l0+np.arctan2((xnn*np.sin(c)),(rho*np.cos(b0)*np.cos(c)-ynn*np.sin(b0)*np.sin(c)))
+    
+    sel1=np.isfinite(l1)
+    
+    m_out=l1.copy()*0.
+    #print('3')
+    for j in range(np.shape(sel1)[0]):
+        indp = hp.ang2pix(nside,np.pi/2. - b1[j],l1[j])
+        m_out[j]=m_in[indp]
+    
+    if plot == True :
+        plt.figure()
+        ax = plt.gca()
+        plt.imshow(np.log10(m_out),cmap='Spectral_r',origin='lower')
+        plt.contour((np.rad2deg(l1)),levels=np.arange(np.min(np.rad2deg(l1)),np.max(np.rad2deg(l1)),step),colors='black',linewidths=0.5,origin='lower',linestyles='dashed')
+        plt.contour((np.rad2deg(b1)),levels=np.arange(np.min(np.rad2deg(b1)),np.max(np.rad2deg(b1)),step),colors='black',linewidths=0.5,origin='lower',linestyles='dashed')
+        ax.axes.xaxis.set_ticklabels([])
+        ax.axes.yaxis.set_ticklabels([])
 
+    return m_out, np.rad2deg(l1), np.rad2deg(b1), rho
 
 
 
