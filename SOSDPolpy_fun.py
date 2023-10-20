@@ -11,7 +11,6 @@ def SOSDPolpy_fun(nside = 128, resol = 60, l0 =70, b0=20, N = 1, fM = 0, Bstr = 
     import sys
     import math
     import scipy
-    import idlwrap as idl
     from scipy import ndimage as nd
     from scipy import stats as st
     from scipy import constants as ko
@@ -19,30 +18,13 @@ def SOSDPolpy_fun(nside = 128, resol = 60, l0 =70, b0=20, N = 1, fM = 0, Bstr = 
     import healpy as hp
     from astropy.utils.data import get_pkg_data_filename
 
-    #exec(open('/users/braco/ab_py_lib/routines_full.py').read())
-    #exec(open('/users/braco/ab_py_lib/Planck_routines.py').read())
-    #exec(open('/users/braco/ab_py_lib/cube2hpx.py').read())
-    #exec(open('/users/braco/ab_py_lib/curvy.py').read())
-    #exec(open('/users/braco/ab_py_lib/routines_rms.py').read())
-    #exec(open('/users/braco/ab_py_lib/astroHOG-master/astrohog.py').read())
-
-
-    #nside = 128
-    #l0  = 70 ; b0 = -20
-    #N = 1
-    #alphaM = -2.6
-    #fM = 0
-    #resol = 60.
-    #Bstr = 1.
-
     el=np.linspace(0,nside*3,nside*3+1)
     cl=el**(alphaM)
     cl[0:1]=0.
 
-
     # LOS vectors
     npix=hp.nside2npix(nside)
-    lpix=(idl.findgen(npix))
+    lpix=np.linspace(0,npix-1,npix)
     lpix = lpix.astype(int)
     los_vec = hp.pix2vec(nside, lpix)
 
@@ -51,8 +33,8 @@ def SOSDPolpy_fun(nside = 128, resol = 60, l0 =70, b0=20, N = 1, fM = 0, Bstr = 
 
     theta,phi = hp.pix2ang(nside,lpix)
     glat=(np.pi/2-theta)
-    north_vec=idl.dblarr(npix,3)
-    east_vec=idl.dblarr(npix,3)
+    north_vec=np.zeros([npix,3])
+    east_vec=np.zeros([npix,3])
     north_vec = np.array([[-np.cos(phi)*np.sin(np.pi/2.-theta)],[-np.sin(phi)*np.sin(np.pi/2.-theta)],[np.cos(np.pi/2.-theta)]])[:,0,:]
     east_vec = -np.array([los_vec[1]*north_vec[2]-los_vec[2]*north_vec[1],-los_vec[0]*north_vec[2]+los_vec[2]*north_vec[0], los_vec[0]*north_vec[1]-los_vec[1]*north_vec[0]])
 
@@ -64,10 +46,10 @@ def SOSDPolpy_fun(nside = 128, resol = 60, l0 =70, b0=20, N = 1, fM = 0, Bstr = 
 
 
     # Sky map of B field
-    Bvec=idl.fltarr(npix,3)
-    Q_cube=idl.dblarr(npix,N)
-    U_cube=idl.dblarr(npix,N)
-    blos_cube=idl.dblarr(npix,N)
+    Bvec=np.zeros([npix,3])
+    Q_cube=np.zeros([npix,N])
+    U_cube=np.zeros([npix,N])
+    blos_cube=np.zeros([npix,N])
 
     for j in range(N):
         np.random.seed(); mapx = hp.synfast(cl,nside=nside,lmax=2*nside+1,fwhm=resol/60*np.pi/180)
@@ -90,8 +72,8 @@ def SOSDPolpy_fun(nside = 128, resol = 60, l0 =70, b0=20, N = 1, fM = 0, Bstr = 
     # compute maps of Stokes parameters
 
     
-        Bvec_perp=idl.fltarr(npix,3)
-        B_times_los=idl.fltarr(npix) # scalar producet B.los
+        Bvec_perp=np.zeros([npix,3])
+        B_times_los=np.zeros([npix]) # scalar producet B.los
 
         B_times_los=np.sum(Bvec*los_vec,axis=0)
 
@@ -105,8 +87,8 @@ def SOSDPolpy_fun(nside = 128, resol = 60, l0 =70, b0=20, N = 1, fM = 0, Bstr = 
     #compute Q anbd U maps
 
     
-        B_angle=idl.fltarr(npix)
-        Qmap=idl.fltarr(npix) ; Umap=idl.fltarr(npix)
+        B_angle=np.zeros([npix])
+        Qmap=np.zeros([npix]) ; Umap=np.zeros([npix])
         g=np.where(P_I0 > 0.)[0]
         buf = (Bvec_perp[0,g]*north_vec[0,g]+Bvec_perp[1,g]*north_vec[1,g]+Bvec_perp[2,g]*north_vec[2,g])/np.sqrt(P_I0[g])
         b = np.where(buf > 1.)
