@@ -178,7 +178,7 @@ ulb = um2*(glat > 0) + um1*(glat < 0)
 # fraction of polarization coming from the local field with respect to the total one
 fr_m = 0.0
 
-# total stoks parameters
+# total stokes parameters
 Qtot = qlb*fr_m + qm*(1-fr_m)
 Utot = ulb*fr_m + um*(1-fr_m)
 diff_fil = ang_diff(Qtot,Utot,qlb,ulb)
