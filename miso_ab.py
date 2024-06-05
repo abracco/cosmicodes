@@ -11,7 +11,7 @@ def ang_diff(Q1,U1,Q2,U2):
 
 def SOSDPolpy_fun(nside = 128, resol = 60, l0 =70, b0=20, N = 1, fM = 0, Bstr = 1, alphaM = -2.6):
     '''
-        computing dust Stokes parameters from the uniform+turbulent magnetic-field field model as in Planck XLIV 2016. Output: -Blos, P, Q, U
+        computing dust Stokes parameters from the uniform+turbulent magnetic-field model as in Planck XLIV 2016. Output: -Blos, P, Q, U
         '''
     import numpy as np
     import pylab as plt
