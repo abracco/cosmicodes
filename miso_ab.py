@@ -181,13 +181,13 @@ fr_m = 0.5
 # total stokes parameters
 Qtot = qHI*fr_m + qm*(1-fr_m)
 Utot = uHI*fr_m + um*(1-fr_m)
-diff_fil = ang_diff(Qtot,Utot,qHI,uHI)
+miso = ang_diff(Qtot,Utot,qHI,uHI) # misalignemnt between local (HI) and total field (Planck)
 seln = np.where((glat > np.deg2rad(60)) ==1)
 sels = np.where((glat < np.deg2rad(-60)) ==1)
 
 # plotting misalignment distribution
-plt.figure();plt.hist(np.rad2deg(diff_fil[seln]),bins=150,alpha=0.5,range=[-90,90],label='North');plt.xlabel('misalignment angle [deg]');plt.ylabel('counts')
-plt.hist(np.rad2deg(diff_fil[sels]),bins=150,alpha=0.1,hatch='//',range=[-90,90],label='South');plt.xlabel('misalignment angle [deg]');plt.ylabel('counts')
+plt.figure();plt.hist(np.rad2deg(miso[seln]),bins=150,alpha=0.5,range=[-90,90],label='North');plt.xlabel('misalignment angle [deg]');plt.ylabel('counts')
+plt.hist(np.rad2deg(miso[sels]),bins=150,alpha=0.1,hatch='//',range=[-90,90],label='South');plt.xlabel('misalignment angle [deg]');plt.ylabel('counts')
 plt.axvline(x=0,color='k',ls='dashed')
 plt.xlim(-20,20)
 plt.legend()
