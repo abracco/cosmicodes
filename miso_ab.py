@@ -176,7 +176,7 @@ qHI = qm2*(glat > 0) + qm1*(glat < 0)
 uHI = um2*(glat > 0) + um1*(glat < 0)
 
 # fraction of polarization coming from the local field with respect to the total one
-fr_m = 0.2
+fr_m = 0.5
 
 # total stokes parameters
 Qtot = qHI*fr_m + qm*(1-fr_m)
