@@ -159,8 +159,8 @@ theta, phi = hp.pix2ang(nside,pix)
 glon = phi
 glat = np.pi/2. - theta
 
-mis0s = 12 #intrinsic misalignment in the southern Galactic hemisphere
-mis0n = 12 #intrinsic misalignment in the northern Galactic hemisphere
+mis0s = 12 #intrinsic misalignment in the southern Galactic hemisphere in degrees 
+mis0n = 12 #intrinsic misalignment in the northern Galactic hemisphere in degrees 
 
 l = 73; b = 0  #uniform direction of the mean field
 blos, pI, qm, um = SOSDPolpy_fun(l0 = l,b0 = b, nside=nside) #mean field model
@@ -172,16 +172,16 @@ l = 73-mis0n; b = 0 #uniform direction of the northern distortion
 blos, pI, qm2, um2 = SOSDPolpy_fun(l0 = l,b0 = b, nside=nside) #north field model
 
 # stokes parameters of the local bubble (local ISM)
-qlb = qm2*(glat > 0) + qm1*(glat < 0)
-ulb = um2*(glat > 0) + um1*(glat < 0)
+qHI = qm2*(glat > 0) + qm1*(glat < 0)
+uHI = um2*(glat > 0) + um1*(glat < 0)
 
 # fraction of polarization coming from the local field with respect to the total one
-fr_m = 0.0
+fr_m = 0.2
 
 # total stokes parameters
-Qtot = qlb*fr_m + qm*(1-fr_m)
-Utot = ulb*fr_m + um*(1-fr_m)
-diff_fil = ang_diff(Qtot,Utot,qlb,ulb)
+Qtot = qHI*fr_m + qm*(1-fr_m)
+Utot = uHI*fr_m + um*(1-fr_m)
+diff_fil = ang_diff(Qtot,Utot,qHI,uHI)
 seln = np.where((glat > np.deg2rad(60)) ==1)
 sels = np.where((glat < np.deg2rad(-60)) ==1)
 
